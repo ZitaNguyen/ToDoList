@@ -8,7 +8,7 @@ security:
         app_user_provider:
             entity:
                 class: App\Entity\User
-                property: email
+                property: username
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -20,8 +20,10 @@ security:
             form_login:
                 login_path: app_login
                 check_path: app_login
-                # default_target_path: home
-                # always_use_default_target_path: true
+                default_target_path: homepage
+                always_use_default_target_path: true
+                failure_path: app_login
+                use_forward: false
             logout:
                 path: app_logout
                 target: home
