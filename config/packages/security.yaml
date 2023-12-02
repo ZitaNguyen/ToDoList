@@ -16,6 +16,18 @@ security:
         main:
             lazy: true
             provider: app_user_provider
+            entry_point: form_login
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                # default_target_path: home
+                # always_use_default_target_path: true
+            logout:
+                path: app_logout
+                target: home
+        secured_area:
+            form_login:
+                enable_csrf: true
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall

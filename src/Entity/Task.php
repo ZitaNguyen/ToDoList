@@ -25,6 +25,12 @@ class Task
     #[ORM\Column]
     private ?bool $isDone = null;
 
+    public function __construct()
+    {
+        $this->createdAt = new \Datetime();
+        $this->isDone = false;
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -66,15 +72,13 @@ class Task
         return $this;
     }
 
-    public function isIsDone(): ?bool
+    public function isDone(): ?bool
     {
         return $this->isDone;
     }
 
-    public function setIsDone(bool $isDone): static
+    public function toggle($flag)
     {
-        $this->isDone = $isDone;
-
-        return $this;
+        $this->isDone = $flag;
     }
 }
