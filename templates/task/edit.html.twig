@@ -5,7 +5,7 @@
         {{ form_start(form, {'action' : path('task_edit', { 'id' : task.id })}) }}
             {{ form_widget(form) }}
 
-            Author: {% if task.user %} {{ task.user.username }} {% else %} Anonyme {% endif %}
+            Auteur: {% if task.user %} {{ task.user.username }} {% else %} Anonyme {% endif %}
 
             <button type="submit" class="btn btn-success pull-right">Modifier</button>
         {{ form_end(form) }}

@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class TaskController extends AbstractController
 {
@@ -83,14 +84,25 @@ class TaskController extends AbstractController
     }
 
 
-    #[Route('/tasks/{id}/delete', name: 'task_delete', methods: ['DELETE'])]
+    #[Route('/tasks/{id}/delete', name: 'task_delete', methods: ['GET', 'DELETE'])]
     public function deleteTaskAction(Task $task): Response
     {
-        $this->entityManager->remove($task);
-        $this->entityManager->flush();
+        // Check if the logged-in user is the owner of the task
+        if ( (!is_null($task->getUser()) && $this->getUser() !== $task->getUser()) ||
+        // Check if the logged-in user has role admin to delete anonym task
+            (is_null($task->getUser()) && !in_array('ROLE_ADMIN', $this->getUser()->getRoles()))
+        )
+        {
+            throw new AccessDeniedException;
+        }
+        else
+        {
+            $this->entityManager->remove($task);
+            $this->entityManager->flush();
 
-        $this->addFlash('success', 'La tâche a bien été supprimée.');
+            $this->addFlash('success', 'La tâche a bien été supprimée.');
 
-        return $this->redirectToRoute('task_list');
+            return $this->redirectToRoute('task_list');
+        }
     }
 }

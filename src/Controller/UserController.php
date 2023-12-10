@@ -58,7 +58,7 @@ class UserController extends AbstractController
     #[Route('/users/{id}/edit', name: 'user_edit', methods: ['GET', 'POST'])]
     public function editAction(User $user, Request $request, UserPasswordHasherInterface $passwordHasher): Response
     {
-        $form = $this->createForm(UserType::class, $user);
+        $form = $this->createForm(UserType::class, $user)->remove('password');
 
         $form->handleRequest($request);
 
