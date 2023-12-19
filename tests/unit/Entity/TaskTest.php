@@ -1,50 +1,42 @@
 <?php
 
-namespace App\Tests;
+namespace App\Tests\Unit\Entity;
 
 use App\Entity\Task;
-use App\Entity\User;
-use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Framework\TestCase;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-class TaskTest extends TestCase
+class TaskTest extends KernelTestCase
 {
-    private $entityManager;
-    private $passwordHasher;
-
-    protected function setUp(): void
+    public function getEntity(): Task
     {
-        // Set up your dependencies here
-        $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        $this->passwordHasher = $this->createMock(UserPasswordHasherInterface::class);
+        return (new Task())
+            ->setTitle('Test task title')
+            ->setContent('Test task content')
+            ->setUser(null)
+            ->setCreatedAt(new \DateTimeImmutable());
     }
 
-    public function testTask()
+    public function testEntityIsValid(): void
     {
-        $user = new User();
-        $user->setUsername('testTask');
-        $user->setEmail('testTask@test.fr');
-        $user->setPassword($this->passwordHasher->hashPassword(
-            $user,
-            'test'
-        ));
-        $user->setRoles(['ROLE_USER']);
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
+        self::bootKernel();
+        $container = static::getContainer();
 
-        $task = new Task();
-        $task->setTitle('Test task title');
-        $task->setContent('Test task content');
-        $task->setUser($user);
-        $task->setCreatedAt(new \DateTimeImmutable('2023-01-12 23:30:00'));
-        $this->entityManager->persist($task);
-        $this->entityManager->flush();
+        $task = $this->getEntity();
 
-        $this->assertSame('Test task title', $task->getTitle());
-        $this->assertSame('Test task content', $task->getContent());
-        $this->assertSame($user, $task->getUser());
-        $this->assertFalse($task->isDone());
-        $this->assertEquals(new \DateTimeImmutable('2023-01-12 23:30:00'), $task->getCreatedAt());
+        $errors = $container->get('validator')->validate($task);
+
+        $this->assertCount(0, $errors);
+    }
+
+    public function testInvalidContent()
+    {
+        self::bootKernel();
+        $container = static::getContainer();
+
+        $task = $this->getEntity();
+        $task->setContent('');
+
+        $errors = $container->get('validator')->validate($task);
+        $this->assertCount(1, $errors);
     }
 }

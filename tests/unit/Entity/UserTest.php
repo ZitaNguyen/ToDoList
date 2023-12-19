@@ -1,42 +1,43 @@
 <?php
 
-namespace App\Tests;
+namespace App\Tests\Unit\Entity;
 
 use App\Entity\User;
-use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Framework\TestCase;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-class UserTest extends TestCase
+class UserTest extends KernelTestCase
 {
-    private $entityManager;
-    private $passwordHasher;
-
-    protected function setUp(): void
+    public function getEntity(): User
     {
-        // Set up your dependencies here
-        $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        $this->passwordHasher = $this->createMock(UserPasswordHasherInterface::class);
+        return (new User())
+            ->setUsername('testUser')
+            ->setEmail('testUser@test.fr')
+            ->setPassword('test')
+            ->setRoles(['ROLE_USER']);
     }
 
-    public function testUser()
+    public function testEntityIsValid(): void
     {
-        $user = new User();
-        $user->setUsername('testUser');
-        $user->setEmail('testUser@test.fr');
-        $hashedPassword = $this->passwordHasher->hashPassword(
-            $user,
-            'test'
-        );
-        $user->setPassword($hashedPassword);
-        $user->setRoles(['ROLE_USER']);
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
+        self::bootKernel();
+        $container = static::getContainer();
 
-        $this->assertSame('testUser', $user->getUsername());
-        $this->assertSame($hashedPassword, $user->getPassword());
-        $this->assertSame(['ROLE_USER'], $user->getRoles());
-        $this->assertEquals('testUser@test.fr', $user->getEmail());
-        $this->assertNull($user->eraseCredentials());
+        $user = $this->getEntity();
+
+        $errors = $container->get('validator')->validate($user);
+
+        $this->assertCount(0, $errors);
     }
+
+    public function testInvalidUsername()
+    {
+        self::bootKernel();
+        $container = static::getContainer();
+
+        $user = $this->getEntity();
+        $user->setUsername('');
+
+        $errors = $container->get('validator')->validate($user);
+        $this->assertCount(2, $errors);
+    }
+
 }
