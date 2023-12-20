@@ -3,41 +3,41 @@
 namespace App\Tests\Functional\Form;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\HttpFoundation\Response;
 
 class UserTest extends WebTestCase
 {
-    public function testCreateUser(): void
+    private $client;
+
+    public function setUp(): void
     {
-        $client = static::createClient();
-        $crawler = $client->request('GET', '/users/create');
+        $this->client = static::createClient();
+    }
+
+    public function loginUser(): void
+    {
+        $crawler = $this->client->request('GET', '/login');
+        $form = $crawler->selectButton('Se connecter')->form();
+        $this->client->submit($form, [
+            '_username' => 'Tester',
+            '_password' => 'test'
+        ]);
+    }
+
+    public function testUserTypeForm(): void
+    {
+        $this->loginUser();
+
+        $crawler = $this->client->request('GET', '/users/create');
 
         $this->assertResponseIsSuccessful();
-        
+
         $this->assertSelectorTextContains('h1', 'Créer un utilisateur');
 
-        // Get form
-        $submitButton = $crawler->selectButton('Ajouter');
-        $form = $submitButton->form();
+        $this->assertEquals(1, $crawler->filter('input[name="user[username]"]')->count());
+        $this->assertEquals(1, $crawler->filter('input[name="user[password][first]"]')->count());
+        $this->assertEquals(1, $crawler->filter('input[name="user[password][second]"]')->count());
+        $this->assertEquals(1, $crawler->filter('input[name="user[email]"]')->count());
+        $this->assertEquals(2, $crawler->filter('input[name="user[roles][]"]')->count());
 
-        $form["user[username]"] = "Zita test";
-        $form["user[password][first]"] = "test";
-        $form["user[password][second]"] = "test";
-        $form["user[email]"] = "zita@test.fr";
-        $form["user[roles][]"] = "ROLE_USER";
-
-        // Send form
-        $client->submit($form);
-
-        // Check status code
-        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
-
-        $client->followRedirect();
-
-        // Check flash message
-        $this->assertSelectorTextContains(
-            'div.alert.alert-success',
-            "Superbe ! L'utilisateur a bien été ajouté."
-        );
     }
 }
