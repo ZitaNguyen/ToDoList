@@ -3,48 +3,156 @@
 namespace App\Tests\Functional\Controller;
 
 use App\Entity\Task;
-use App\Entity\User;
-use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Framework\TestCase;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\Response;
 
-class TaskTest extends TestCase
+class TaskTest extends WebTestCase
 {
-    private $entityManager;
-    private $passwordHasher;
+    private $client;
 
-    protected function setUp(): void
+    public function setUp(): void
     {
-        // Set up your dependencies here
-        $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        $this->passwordHasher = $this->createMock(UserPasswordHasherInterface::class);
+        $this->client = static::createClient();
     }
 
-    public function testTask()
+    public function loginUser(): void
     {
-        $user = new User();
-        $user->setUsername('testTask');
-        $user->setEmail('testTask@test.fr');
-        $user->setPassword($this->passwordHasher->hashPassword(
-            $user,
-            'test'
-        ));
-        $user->setRoles(['ROLE_USER']);
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
+        $crawler = $this->client->request('GET', '/login');
+        $form = $crawler->selectButton('Se connecter')->form();
+        $this->client->submit($form, [
+            '_username' => 'Zita',
+            '_password' => 'test'
+        ]);
+    }
 
+    public function testCreateTaskAnonym(): void
+    {
+        $crawler = $this->client->request('GET', '/tasks/create');
+
+        $this->assertResponseIsSuccessful();
+
+        // Get and Fill in the form
+        $form = $crawler->selectButton('Ajouter')->form();
+        $form['task[title]'] = 'New title';
+        $form['task[content]'] = 'New content';
+
+        // Submit the form
+        $this->client->submit($form);
+
+        // Assert that the user is created successfully
+        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+
+        $crawler = $this->client->followRedirect();
+        $this->assertRouteSame('task_list');
+
+         $this->assertSelectorTextContains(
+            'div.alert.alert-success',
+            "Superbe ! La tâche a été bien été ajoutée."
+        );
+    }
+
+    public function testCreateTaskIdentified(): void
+    {
+        $this->loginUser();
+
+        // Get the user from the security token
+        $user = $this->client->getContainer()->get('security.token_storage')->getToken()->getUser();
+
+        // Set user for task
         $task = new Task();
-        $task->setTitle('Test task title');
-        $task->setContent('Test task content');
         $task->setUser($user);
-        $task->setCreatedAt(new \DateTimeImmutable('2023-01-12 23:30:00'));
-        $this->entityManager->persist($task);
-        $this->entityManager->flush();
 
-        $this->assertSame('Test task title', $task->getTitle());
-        $this->assertSame('Test task content', $task->getContent());
-        $this->assertSame($user, $task->getUser());
-        $this->assertFalse($task->isDone());
-        $this->assertEquals(new \DateTimeImmutable('2023-01-12 23:30:00'), $task->getCreatedAt());
+        $crawler = $this->client->request('GET', '/tasks/create');
+
+        $this->assertResponseIsSuccessful();
+
+        // Get and Fill in the form
+        $form = $crawler->selectButton('Ajouter')->form();
+        $form['task[title]'] = 'New title';
+        $form['task[content]'] = 'New content';
+
+        // Submit the form
+        $this->client->submit($form);
+
+        // Assert that the user is created successfully
+        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+
+        $crawler = $this->client->followRedirect();
+        $this->assertRouteSame('task_list');
+
+         $this->assertSelectorTextContains(
+            'div.alert.alert-success',
+            "Superbe ! La tâche a été bien été ajoutée."
+        );
     }
+
+    public function testEditTask(): void
+    {
+        $crawler = $this->client->request('GET', '/tasks/1/edit');
+
+        $this->assertResponseIsSuccessful();
+
+        // Get and Fill in the form
+        $form = $crawler->selectButton('Modifier')->form();
+        $form['task[title]'] = 'New title';
+        $form['task[content]'] = 'New edited content';
+
+        // Submit the form
+        $crawler = $this->client->submit($form);
+
+        // Assert that the user is modified successfully
+        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+
+        $crawler = $this->client->followRedirect();
+        $this->assertRouteSame('task_list');
+
+        $this->assertSelectorTextContains(
+            'div.alert.alert-success',
+            "Superbe ! La tâche a bien été modifiée."
+        );
+    }
+
+    public function testDeleteTask(): void
+    {
+        $this->loginUser();
+
+        // Get the user from the security token
+        $user = $this->client->getContainer()->get('security.token_storage')->getToken()->getUser();
+        $entityManager = $this->client->getContainer()->get('doctrine.orm.entity_manager');
+        $task = $entityManager->getRepository(Task::class)->findOneBy(['user' => $user]);
+        $taskId = $task->getId();
+
+        $crawler = $this->client->request('GET', "/tasks/{$taskId}/delete");
+
+        // Assert that the user is deleted successfully
+        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+
+        $crawler = $this->client->followRedirect();
+        $this->assertRouteSame('task_list');
+
+        $this->assertSelectorTextContains(
+            'div.alert.alert-success',
+            "Superbe ! La tâche a bien été supprimée."
+        );
+    }
+
+    public function testToggleTask(): void
+    {
+        // Get task
+        $entityManager = $this->client->getContainer()->get('doctrine.orm.entity_manager');
+        $task = $entityManager->getRepository(Task::class)->findOneBy(['id' => 1]);
+        $isDoneBefore = $task->isDone();
+
+        $crawler = $this->client->request('GET', '/tasks/1/toggle');
+        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+
+        $crawler = $this->client->followRedirect();
+        $this->assertRouteSame('task_list');
+
+        $task = $entityManager->getRepository(Task::class)->findOneBy(['id' => 1]);
+        $isDoneAfter = $task->isDone();
+
+        $this->assertNotEquals($isDoneBefore, $isDoneAfter);
+    }
+
 }
