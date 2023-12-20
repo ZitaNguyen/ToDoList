@@ -18,7 +18,7 @@ class UserTest extends WebTestCase
         $crawler = $this->client->request('GET', '/login');
         $form = $crawler->selectButton('Se connecter')->form();
         $this->client->submit($form, [
-            '_username' => 'Tester',
+            '_username' => 'Zita',
             '_password' => 'test'
         ]);
     }

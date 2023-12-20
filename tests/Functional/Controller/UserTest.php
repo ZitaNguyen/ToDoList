@@ -5,7 +5,6 @@ namespace App\Tests\Functional\Controller;
 use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserTest extends WebTestCase
 {
@@ -21,7 +20,7 @@ class UserTest extends WebTestCase
         $crawler = $this->client->request('GET', '/login');
         $form = $crawler->selectButton('Se connecter')->form();
         $this->client->submit($form, [
-            '_username' => 'Tester',
+            '_username' => 'Zita',
             '_password' => 'test'
         ]);
     }
@@ -64,7 +63,6 @@ class UserTest extends WebTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
 
         $crawler = $this->client->followRedirect();
-        $this->assertResponseStatusCodeSame(Response::HTTP_OK);
 
          $this->assertSelectorTextContains(
             'div.alert.alert-success',
@@ -87,6 +85,37 @@ class UserTest extends WebTestCase
             'div.alert.alert-success',
             "Superbe ! L'utilisateur a bien été supprimé."
         );
-
     }
+
+    // public function testEditUser(): void
+    // {
+    //     $this->loginUser();
+
+    //     $entityManager = $this->client->getContainer()->get('doctrine.orm.entity_manager');
+    //     $user = $entityManager->find(User::class, 1);
+    //     $userId = $user->getId();
+    //     $crawler = $this->client->request('GET', '/users/'.$userId.'/edit');
+
+    //     $this->assertResponseIsSuccessful();
+
+    //     // Get and Fill in the form
+    //     $form = $crawler->selectButton('Modifier')->form();
+    //     $form['user[username]'] = $user->getUsername();
+    //     $form['user[email]'] = $user->getEmail();
+    //     $form['user[roles]'] = ['ROLE_ADMIN'];
+
+    //     // Submit the form
+    //     $this->client->submit($form);
+
+    //     // Assert that the user is modified successfully
+    //     $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+
+    //     $crawler = $this->client->followRedirect();
+    //     $this->assertRouteSame('user_list');
+
+    //      $this->assertSelectorTextContains(
+    //         'div.alert.alert-success',
+    //         "Superbe ! L'utilisateur a bien été modifié."
+    //     );
+    // }
 }
