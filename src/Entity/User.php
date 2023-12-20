@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -18,18 +19,39 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Assert\NotBlank]
+    #[Assert\Email(
+        message: 'Email {{ value }} est invalid.',
+    )]
     private ?string $email = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Assert\NotBlank]
+    #[Assert\Regex(
+        pattern: '/\d/',
+        match: false,
+        message: 'Votre prénom ne peut pas contenir de chiffre',
+    )]
+    #[Assert\Length(
+        min: 2,
+        max: 180,
+        minMessage: 'Votre nom devrait au moins {{ limit }} caractères',
+        maxMessage: 'Votre nom ne devrait pas plus de {{ limit }} caractères',
+    )]
     private ?string $username = null;
 
     #[ORM\Column(type: 'json')]
+    #[Assert\Type(
+        type: 'array',
+        message: 'Les rôles doivent être un tableau.'
+    )]
     private array $roles = ['ROLE_USER'];
 
     /**
      * @var string The hashed password
      */
     #[ORM\Column]
+    #[Assert\NotBlank]
     private ?string $password = null;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Task::class)]
