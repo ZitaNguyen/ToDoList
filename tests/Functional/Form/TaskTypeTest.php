@@ -4,7 +4,7 @@ namespace App\Tests\Functional\Form;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class TaskTest extends WebTestCase
+class TaskTypeTest extends WebTestCase
 {
     public function testSomething(): void
     {
