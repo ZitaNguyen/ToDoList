@@ -5,6 +5,8 @@ namespace App\Tests\Functional\Controller;
 use App\Entity\User;
 use App\Tests\Helper\LoginUser;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+
 
 class UserControllerTest extends LoginUser
 {
@@ -85,7 +87,7 @@ class UserControllerTest extends LoginUser
     //     $form = $crawler->selectButton('Modifier')->form();
     //     $form['user[username]'] = $user->getUsername();
     //     $form['user[email]'] = $user->getEmail();
-    //     $form['user[roles]'] = ['ROLE_ADMIN'];
+    //     $form['user[roles]'] = ['ROLE_ADMIN', 'ROLE_USER'];
 
     //     // Submit the form
     //     $this->client->submit($form);
