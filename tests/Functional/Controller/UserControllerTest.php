@@ -3,31 +3,14 @@
 namespace App\Tests\Functional\Controller;
 
 use App\Entity\User;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Tests\Helper\LoginUser;
 use Symfony\Component\HttpFoundation\Response;
 
-class UserTest extends WebTestCase
+class UserControllerTest extends LoginUser
 {
-    private $client;
-
-    public function setUp(): void
-    {
-        $this->client = static::createClient();
-    }
-
-    public function loginUser(): void
-    {
-        $crawler = $this->client->request('GET', '/login');
-        $form = $crawler->selectButton('Se connecter')->form();
-        $this->client->submit($form, [
-            '_username' => 'Zita',
-            '_password' => 'test'
-        ]);
-    }
-
     public function testListUser(): void
     {
-        $this->loginUser();
+        $this->loginAdminUser();
 
         $crawler = $this->client->request('GET', '/users');
 
@@ -43,7 +26,7 @@ class UserTest extends WebTestCase
 
     public function testCreateUser(): void
     {
-        $this->loginUser();
+        $this->loginAdminUser();
 
         $crawler = $this->client->request('GET', '/users/create');
 
@@ -62,7 +45,7 @@ class UserTest extends WebTestCase
         // Assert that the user is created successfully
         $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
 
-        $crawler = $this->client->followRedirect();
+        $this->client->followRedirect();
 
          $this->assertSelectorTextContains(
             'div.alert.alert-success',
@@ -78,7 +61,7 @@ class UserTest extends WebTestCase
         // Assert that the user is deleted successfully
         $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
 
-        $crawler = $this->client->followRedirect();
+        $this->client->followRedirect();
         $this->assertRouteSame('user_list');
 
         $this->assertSelectorTextContains(
@@ -89,7 +72,7 @@ class UserTest extends WebTestCase
 
     // public function testEditUser(): void
     // {
-    //     $this->loginUser();
+    //     $this->loginAdminUser();
 
     //     $entityManager = $this->client->getContainer()->get('doctrine.orm.entity_manager');
     //     $user = $entityManager->find(User::class, 1);
@@ -110,7 +93,7 @@ class UserTest extends WebTestCase
     //     // Assert that the user is modified successfully
     //     $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
 
-    //     $crawler = $this->client->followRedirect();
+    //     $this->client->followRedirect();
     //     $this->assertRouteSame('user_list');
 
     //      $this->assertSelectorTextContains(

@@ -3,9 +3,8 @@
 namespace App\Tests\Functional\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\HttpFoundation\Response;
 
-class DefaultTest extends WebTestCase
+class DefaultControllerTest extends WebTestCase
 {
     public function testHomePage(): void
     {
@@ -16,9 +15,9 @@ class DefaultTest extends WebTestCase
 
         $this->assertSelectorTextContains('h1', "Bienvenue sur Todo List, l'application vous permettant de gérer l'ensemble de vos tâches sans effort !");
 
-        $this->assertEquals(1, $crawler->filter('.btn.btn-success')->count());
+        $this->assertEquals(2, $crawler->filter('.btn.btn-success')->count());
         $this->assertEquals(1, $crawler->filter('.btn.btn-info')->count());
-        $this->assertEquals(1, $crawler->filter('.btn.btn-secondary')->count());
+        $this->assertEquals(1, $crawler->filter('.btn.btn-primary')->count());
 
     }
 }

@@ -3,28 +3,11 @@
 namespace App\Tests\Functional\Controller;
 
 use App\Entity\Task;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Tests\Helper\LoginUser;
 use Symfony\Component\HttpFoundation\Response;
 
-class TaskTest extends WebTestCase
+class TaskControllerTest extends LoginUser
 {
-    private $client;
-
-    public function setUp(): void
-    {
-        $this->client = static::createClient();
-    }
-
-    public function loginUser(): void
-    {
-        $crawler = $this->client->request('GET', '/login');
-        $form = $crawler->selectButton('Se connecter')->form();
-        $this->client->submit($form, [
-            '_username' => 'Zita',
-            '_password' => 'test'
-        ]);
-    }
-
     public function testCreateTaskAnonym(): void
     {
         $crawler = $this->client->request('GET', '/tasks/create');
@@ -42,7 +25,7 @@ class TaskTest extends WebTestCase
         // Assert that the user is created successfully
         $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
 
-        $crawler = $this->client->followRedirect();
+        $this->client->followRedirect();
         $this->assertRouteSame('task_list');
 
          $this->assertSelectorTextContains(
@@ -53,7 +36,7 @@ class TaskTest extends WebTestCase
 
     public function testCreateTaskIdentified(): void
     {
-        $this->loginUser();
+        $this->loginAdminUser();
 
         // Get the user from the security token
         $user = $this->client->getContainer()->get('security.token_storage')->getToken()->getUser();
@@ -77,7 +60,7 @@ class TaskTest extends WebTestCase
         // Assert that the user is created successfully
         $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
 
-        $crawler = $this->client->followRedirect();
+        $this->client->followRedirect();
         $this->assertRouteSame('task_list');
 
          $this->assertSelectorTextContains(
@@ -98,12 +81,12 @@ class TaskTest extends WebTestCase
         $form['task[content]'] = 'New edited content';
 
         // Submit the form
-        $crawler = $this->client->submit($form);
+        $this->client->submit($form);
 
         // Assert that the user is modified successfully
         $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
 
-        $crawler = $this->client->followRedirect();
+        $this->client->followRedirect();
         $this->assertRouteSame('task_list');
 
         $this->assertSelectorTextContains(
@@ -114,7 +97,7 @@ class TaskTest extends WebTestCase
 
     public function testDeleteTask(): void
     {
-        $this->loginUser();
+        $this->loginAdminUser();
 
         // Get the user from the security token
         $user = $this->client->getContainer()->get('security.token_storage')->getToken()->getUser();
@@ -122,12 +105,12 @@ class TaskTest extends WebTestCase
         $task = $entityManager->getRepository(Task::class)->findOneBy(['user' => $user]);
         $taskId = $task->getId();
 
-        $crawler = $this->client->request('GET', "/tasks/{$taskId}/delete");
+        $this->client->request('GET', "/tasks/{$taskId}/delete");
 
         // Assert that the user is deleted successfully
         $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
 
-        $crawler = $this->client->followRedirect();
+        $this->client->followRedirect();
         $this->assertRouteSame('task_list');
 
         $this->assertSelectorTextContains(
@@ -143,10 +126,10 @@ class TaskTest extends WebTestCase
         $task = $entityManager->getRepository(Task::class)->findOneBy(['id' => 1]);
         $isDoneBefore = $task->isDone();
 
-        $crawler = $this->client->request('GET', '/tasks/1/toggle');
+        $this->client->request('GET', '/tasks/1/toggle');
         $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
 
-        $crawler = $this->client->followRedirect();
+        $this->client->followRedirect();
         $this->assertRouteSame('task_list');
 
         $task = $entityManager->getRepository(Task::class)->findOneBy(['id' => 1]);

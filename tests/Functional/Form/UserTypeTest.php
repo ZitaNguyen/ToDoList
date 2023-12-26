@@ -4,7 +4,7 @@ namespace App\Tests\Functional\Form;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class UserTest extends WebTestCase
+class UserTypeTest extends WebTestCase
 {
     private $client;
 
