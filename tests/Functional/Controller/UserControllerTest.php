@@ -72,35 +72,35 @@ class UserControllerTest extends LoginUser
         );
     }
 
-    // public function testEditUser(): void
-    // {
-    //     $this->loginAdminUser();
+    public function testEditUser(): void
+    {
+        $this->loginAdminUser();
 
-    //     $entityManager = $this->client->getContainer()->get('doctrine.orm.entity_manager');
-    //     $user = $entityManager->find(User::class, 1);
-    //     $userId = $user->getId();
-    //     $crawler = $this->client->request('GET', '/users/'.$userId.'/edit');
+        $entityManager = $this->client->getContainer()->get('doctrine.orm.entity_manager');
+        $user = $entityManager->find(User::class, 1);
+        $userId = $user->getId();
+        $crawler = $this->client->request('GET', '/users/'.$userId.'/edit');
 
-    //     $this->assertResponseIsSuccessful();
+        $this->assertResponseIsSuccessful();
 
-    //     // Get and Fill in the form
-    //     $form = $crawler->selectButton('Modifier')->form();
-    //     $form['user[username]'] = $user->getUsername();
-    //     $form['user[email]'] = $user->getEmail();
-    //     $form['user[roles]'] = ['ROLE_ADMIN', 'ROLE_USER'];
+        // Get and Fill in the form
+        $form = $crawler->selectButton('Modifier')->form();
+        $form['user[username]'] = $user->getUsername();
+        $form['user[email]'] = $user->getEmail();
+        $form['user[roles]'] = ['ROLE_ADMIN', 'ROLE_USER'];
 
-    //     // Submit the form
-    //     $this->client->submit($form);
+        // Submit the form
+        $this->client->submit($form);
 
-    //     // Assert that the user is modified successfully
-    //     $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+        // Assert that the user is modified successfully
+        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
 
-    //     $this->client->followRedirect();
-    //     $this->assertRouteSame('user_list');
+        $this->client->followRedirect();
+        $this->assertRouteSame('user_list');
 
-    //      $this->assertSelectorTextContains(
-    //         'div.alert.alert-success',
-    //         "Superbe ! L'utilisateur a bien été modifié."
-    //     );
-    // }
+         $this->assertSelectorTextContains(
+            'div.alert.alert-success',
+            "Superbe ! L'utilisateur a bien été modifié."
+        );
+    }
 }
