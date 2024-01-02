@@ -47,7 +47,7 @@ Les administrateurs du projet regarderont que votre pull request soit conforme a
 
 ## Conventions de codage
 
-Le projet suit les bonnes pratiques des PSR*1 et 12 :
+Le projet suit les bonnes pratiques des PSR-1 et 12 :
 * PSR-1 : https://www.php-fig.org/psr/psr-1/
 * PSR-12 : https://www.php-fig.org/psr/psr-12/
 

@@ -72,6 +72,7 @@ Pour commencer avec ce projet PHP, suivez les étapes ci-dessous
 
    ```bash
    php bin/console doctrine:fixtures:load
+   ```
 
 8. Démarrez le serveur de développement
 
