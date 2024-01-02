@@ -12,10 +12,12 @@ class SecurityController extends AbstractController
 {
     private $utils;
 
+
     public function __construct(AuthenticationUtils $utils)
     {
         $this->utils = $utils;
     }
+
 
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
     public function loginAction(): Response
@@ -28,6 +30,7 @@ class SecurityController extends AbstractController
             'error'         => $error,
         ));
     }
+
 
     #[Route('/logout', name: 'app_logout', methods: ['GET'])]
     public function logout(): void

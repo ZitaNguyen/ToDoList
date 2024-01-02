@@ -14,12 +14,17 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class UserController extends AbstractController
 {
+
     public function __construct(
         private UserRepository $userRepository,
         private EntityManagerInterface $entityManager
     ){
     }
 
+
+    /**
+     * List all users
+     */
     #[Route('/users', name: 'user_list', methods: ['GET'])]
     public function listAction(): Response
     {
@@ -27,6 +32,10 @@ class UserController extends AbstractController
     }
 
 
+
+    /**
+     * Create a new user
+     */
     #[Route('/users/create', name: 'user_create', methods: ['GET', 'POST'])]
     public function createAction(Request $request, UserPasswordHasherInterface $passwordHasher): Response
     {
@@ -55,6 +64,11 @@ class UserController extends AbstractController
     }
 
 
+
+    /**
+     * Edit a user
+     * @param int id
+     */
     #[Route('/users/{id}/edit', name: 'user_edit', methods: ['GET', 'POST'])]
     public function editAction(User $user, Request $request, UserPasswordHasherInterface $passwordHasher): Response
     {
@@ -75,6 +89,11 @@ class UserController extends AbstractController
         return $this->render('user/edit.html.twig', ['form' => $form->createView(), 'user' => $user]);
     }
 
+
+    /**
+     * Delete a user
+     * @param int id
+     */
     #[Route('/users/{id}/delete', name: 'user_delete', methods: ['DELETE'])]
     public function deleteAction(User $user): Response
     {
