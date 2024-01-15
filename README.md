@@ -85,6 +85,11 @@ Pour commencer avec ce projet PHP, suivez les étapes ci-dessous
     php bin/phpunit
     ```
 
+10. Lancez des tests de couverture
+    ```bash
+    vendor/bin/phpunit --coverage-html public/test-coverage
+    ```
+
 ## Contrôle du code
 
 La qualité du code a été validé par [Codacy](https://codeclimate.com/). Vous pouvez accéder au rapport de contrôle en cliquant sur [ce lien](https://app.codacy.com/gh/ZitaNguyen/TodoList/dashboard).
