@@ -57,8 +57,11 @@ Les librairies PHPStan et PHP_codesniffer sont présentes dans le projet pour vo
 
 En fonction du but d’une méthode elle devra respecter le nommage suivant :
 * set()
-* has()
-* all()
+* get()
+* list()
+* create()
+* edit()
+* delete()
 * replace()
 * remove()
 * clear()
@@ -66,10 +69,6 @@ En fonction du but d’une méthode elle devra respecter le nommage suivant :
 * add()
 * register()
 * count()
-* keys()
-* create()
-* edit()
-* delete()
 
 ### Conventions de nommage
 

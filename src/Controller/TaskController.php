@@ -21,6 +21,10 @@ class TaskController extends AbstractController
     ){
     }
 
+
+    /**
+     * List all tasks
+     */
     #[Route('/tasks', name: 'task_list', methods: ['GET'])]
     public function listAction(): Response
     {
@@ -28,6 +32,10 @@ class TaskController extends AbstractController
     }
 
 
+
+    /**
+     * Create a new task
+     */
     #[Route('/tasks/create', name: 'task_create', methods: ['GET', 'POST'])]
     public function createAction(Request $request): Response
     {
@@ -51,6 +59,11 @@ class TaskController extends AbstractController
     }
 
 
+
+    /**
+     * Edit a task
+     * @param int id
+     */
     #[Route('/tasks/{id}/edit', name: 'task_edit', methods: ['GET', 'POST'])]
     public function editAction(Task $task, Request $request): Response
     {
@@ -72,6 +85,11 @@ class TaskController extends AbstractController
     }
 
 
+
+    /**
+     * Toggle a task status: done / undone
+     * @param int id
+     */
     #[Route('/tasks/{id}/toggle', name: 'task_toggle')]
     public function toggleTaskAction(Task $task): Response
     {
@@ -84,6 +102,11 @@ class TaskController extends AbstractController
     }
 
 
+
+    /**
+     * Delete a task
+     * @param int id
+     */
     #[Route('/tasks/{id}/delete', name: 'task_delete', methods: ['GET', 'DELETE'])]
     public function deleteTaskAction(Task $task): Response
     {
