@@ -77,16 +77,16 @@ class UserControllerTest extends LoginUser
         $this->loginAdminUser();
 
         $entityManager = $this->client->getContainer()->get('doctrine.orm.entity_manager');
-        $user = $entityManager->find(User::class, 1);
-        $userId = $user->getId();
+        $users = $entityManager->getRepository(User::class)->findAll();
+        $userId = $users[0]->getId();
         $crawler = $this->client->request('GET', '/users/'.$userId.'/edit');
 
         $this->assertResponseIsSuccessful();
 
         // Get and Fill in the form
         $form = $crawler->selectButton('Modifier')->form();
-        $form['user[username]'] = $user->getUsername();
-        $form['user[email]'] = $user->getEmail();
+        $form['user[username]'] = $users[0]->getUsername();
+        $form['user[email]'] = $users[0]->getEmail();
         $form['user[roles]'] = ['ROLE_ADMIN', 'ROLE_USER'];
 
         // Submit the form

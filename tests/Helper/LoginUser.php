@@ -23,4 +23,14 @@ class LoginUser extends WebTestCase
         ]);
     }
 
+    public function loginAUser(): void
+    {
+        $crawler = $this->client->request('GET', '/login');
+        $form = $crawler->selectButton('Se connecter')->form();
+        $this->client->submit($form, [
+            '_username' => 'Maya',
+            '_password' => 'test'
+        ]);
+    }
+
 }
