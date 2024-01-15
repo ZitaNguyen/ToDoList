@@ -81,11 +81,13 @@ Pour commencer avec ce projet PHP, suivez les étapes ci-dessous
     ```
 
 9. Des tests unitaires et fonctionnels sont présents dans le projet dans le répertoire /tests, vous pouvez les lancer avec la commande suivante
+
     ```bash
     php bin/phpunit
     ```
 
 10. Lancez des tests de couverture
+    
     ```bash
     vendor/bin/phpunit --coverage-html public/test-coverage
     ```

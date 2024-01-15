@@ -10,7 +10,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class TaskController extends AbstractController
 {
@@ -116,7 +115,7 @@ class TaskController extends AbstractController
             (is_null($task->getUser()) && !in_array('ROLE_ADMIN', $this->getUser()->getRoles()))
         )
         {
-            throw new AccessDeniedException;
+            $this->addFlash('error', "Vous n'avez pas l'autorisation de supprimer cette tâche.");
         }
         else
         {
@@ -125,7 +124,7 @@ class TaskController extends AbstractController
 
             $this->addFlash('success', 'La tâche a bien été supprimée.');
 
-            return $this->redirectToRoute('task_list');
         }
+        return $this->redirectToRoute('task_list');
     }
 }
