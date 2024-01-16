@@ -101,7 +101,6 @@ class TaskController extends AbstractController
     }
 
 
-
     /**
      * Delete a task
      * @param int id

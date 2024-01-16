@@ -3,6 +3,7 @@
 namespace App\Tests\Functional\Controller;
 
 use App\Entity\Task;
+use App\Entity\User;
 use App\Tests\Helper\LoginUser;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -75,7 +76,7 @@ class TaskControllerTest extends LoginUser
         );
     }
 
-    public function testDeleteTask(): void
+    public function testDeleteTaskCreatedByUser(): void
     {
         $this->loginAUser();
 
@@ -96,6 +97,38 @@ class TaskControllerTest extends LoginUser
         $this->assertSelectorTextContains(
             'div.alert.alert-success',
             "Superbe ! La tâche a bien été supprimée."
+        );
+    }
+
+    public function testDeleteTaskCreatedByAnotherUser(): void
+    {
+        $this->loginAUser();
+
+        // Get the user from the security token
+        $user = $this->client->getContainer()->get('security.token_storage')->getToken()->getUser();
+        $entityManager = $this->client->getContainer()->get('doctrine.orm.entity_manager');
+
+        // Get all tasks of this user
+        $tasksOfUser = $entityManager->getRepository(Task::class)->findBy(['user' => $user]);
+        $taskIdsOfUser = [];
+        foreach ($tasksOfUser as $task) $taskIdsOfUser[] = $task->getId();
+
+        // Get all tasks in database
+        $allTasks = $entityManager->getRepository(Task::class)->findAll();
+        $allTaskIds = [];
+        foreach ($allTasks as $task) $allTaskIds[] = $task->getId();
+
+        $taskIdsOfOtherUsers = array_diff($allTaskIds, $taskIdsOfUser);
+
+        $this->client->request('GET', "/tasks/{$taskIdsOfOtherUsers[0]}/delete");
+
+        // Assert warning that the task cannot be deleted
+        $this->client->followRedirect();
+        $this->assertRouteSame('task_list');
+
+        $this->assertSelectorTextContains(
+            'div.alert.alert-danger',
+            "Oops ! Vous n'avez pas l'autorisation de supprimer cette tâche."
         );
     }
 
