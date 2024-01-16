@@ -32,10 +32,11 @@ class UserTypeTest extends LoginUser
         $this->loginAdminUser();
 
         $entityManager = $this->client->getContainer()->get('doctrine.orm.entity_manager');
-        $user = $entityManager->find(User::class, 1);
-        $username = $user->getUsername();
+        $users = $entityManager->getRepository(User::class)->findAll();
+        $username = $users[0]->getUsername();
+        $userId = $users[0]->getId();
 
-        $crawler = $this->client->request('GET', '/users/1/edit');
+        $crawler = $this->client->request('GET', "/users/{$userId}/edit");
 
         $this->assertResponseIsSuccessful();
 

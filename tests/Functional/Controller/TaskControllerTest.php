@@ -3,40 +3,16 @@
 namespace App\Tests\Functional\Controller;
 
 use App\Entity\Task;
+use App\Entity\User;
 use App\Tests\Helper\LoginUser;
 use Symfony\Component\HttpFoundation\Response;
 
 class TaskControllerTest extends LoginUser
 {
-    public function testCreateTaskAnonym(): void
+
+    public function testCreateTask(): void
     {
-        $crawler = $this->client->request('GET', '/tasks/create');
-
-        $this->assertResponseIsSuccessful();
-
-        // Get and Fill in the form
-        $form = $crawler->selectButton('Ajouter')->form();
-        $form['task[title]'] = 'New title';
-        $form['task[content]'] = 'New content';
-
-        // Submit the form
-        $this->client->submit($form);
-
-        // Assert that the user is created successfully
-        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
-
-        $this->client->followRedirect();
-        $this->assertRouteSame('task_list');
-
-         $this->assertSelectorTextContains(
-            'div.alert.alert-success',
-            "Superbe ! La tâche a été bien été ajoutée."
-        );
-    }
-
-    public function testCreateTaskIdentified(): void
-    {
-        $this->loginAdminUser();
+        $this->loginAUser();
 
         // Get the user from the security token
         $user = $this->client->getContainer()->get('security.token_storage')->getToken()->getUser();
@@ -71,7 +47,12 @@ class TaskControllerTest extends LoginUser
 
     public function testEditTask(): void
     {
-        $crawler = $this->client->request('GET', '/tasks/1/edit');
+        $this->loginAUser();
+
+        $entityManager = $this->client->getContainer()->get('doctrine.orm.entity_manager');
+        $tasks = $entityManager->getRepository(Task::class)->findAll();
+        $taskId = $tasks[0]->getId();
+        $crawler = $this->client->request('GET', "/tasks/{$taskId}/edit");
 
         $this->assertResponseIsSuccessful();
 
@@ -83,7 +64,7 @@ class TaskControllerTest extends LoginUser
         // Submit the form
         $this->client->submit($form);
 
-        // Assert that the user is modified successfully
+        // Assert that the task is modified successfully
         $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
 
         $this->client->followRedirect();
@@ -95,9 +76,9 @@ class TaskControllerTest extends LoginUser
         );
     }
 
-    public function testDeleteTask(): void
+    public function testDeleteTaskCreatedByUser(): void
     {
-        $this->loginAdminUser();
+        $this->loginAUser();
 
         // Get the user from the security token
         $user = $this->client->getContainer()->get('security.token_storage')->getToken()->getUser();
@@ -107,7 +88,7 @@ class TaskControllerTest extends LoginUser
 
         $this->client->request('GET', "/tasks/{$taskId}/delete");
 
-        // Assert that the user is deleted successfully
+        // Assert that the task is deleted successfully
         $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
 
         $this->client->followRedirect();
@@ -119,20 +100,55 @@ class TaskControllerTest extends LoginUser
         );
     }
 
+    public function testDeleteTaskCreatedByAnotherUser(): void
+    {
+        $this->loginAUser();
+
+        // Get the user from the security token
+        $user = $this->client->getContainer()->get('security.token_storage')->getToken()->getUser();
+        $entityManager = $this->client->getContainer()->get('doctrine.orm.entity_manager');
+
+        // Get all tasks of this user
+        $tasksOfUser = $entityManager->getRepository(Task::class)->findBy(['user' => $user]);
+        $taskIdsOfUser = [];
+        foreach ($tasksOfUser as $task) $taskIdsOfUser[] = $task->getId();
+
+        // Get all tasks in database
+        $allTasks = $entityManager->getRepository(Task::class)->findAll();
+        $allTaskIds = [];
+        foreach ($allTasks as $task) $allTaskIds[] = $task->getId();
+
+        $taskIdsOfOtherUsers = array_diff($allTaskIds, $taskIdsOfUser);
+
+        $this->client->request('GET', "/tasks/{$taskIdsOfOtherUsers[0]}/delete");
+
+        // Assert warning that the task cannot be deleted
+        $this->client->followRedirect();
+        $this->assertRouteSame('task_list');
+
+        $this->assertSelectorTextContains(
+            'div.alert.alert-danger',
+            "Oops ! Vous n'avez pas l'autorisation de supprimer cette tâche."
+        );
+    }
+
     public function testToggleTask(): void
     {
+        $this->loginAUser();
+
         // Get task
         $entityManager = $this->client->getContainer()->get('doctrine.orm.entity_manager');
-        $task = $entityManager->getRepository(Task::class)->findOneBy(['id' => 1]);
-        $isDoneBefore = $task->isDone();
+        $tasks = $entityManager->getRepository(Task::class)->findAll();
+        $taskId = $tasks[0]->getId();
+        $isDoneBefore = $tasks[0]->isDone();
 
-        $this->client->request('GET', '/tasks/1/toggle');
+        $this->client->request('GET', "/tasks/{$taskId}/toggle");
         $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
 
         $this->client->followRedirect();
         $this->assertRouteSame('task_list');
 
-        $task = $entityManager->getRepository(Task::class)->findOneBy(['id' => 1]);
+        $task = $entityManager->getRepository(Task::class)->findOneBy(['id' => $taskId]);
         $isDoneAfter = $task->isDone();
 
         $this->assertNotEquals($isDoneBefore, $isDoneAfter);

@@ -2,15 +2,15 @@
 
 namespace App\Tests\Functional\Form;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Tests\Helper\LoginUser;
 
-class TaskTypeTest extends WebTestCase
+class TaskTypeTest extends LoginUser
 {
     public function testSomething(): void
     {
-        $client = static::createClient();
+        $this->loginAUser();
 
-        $crawler = $client->request('GET', '/tasks/create');
+        $crawler = $this->client->request('GET', '/tasks/create');
 
         $this->assertResponseIsSuccessful();
 
